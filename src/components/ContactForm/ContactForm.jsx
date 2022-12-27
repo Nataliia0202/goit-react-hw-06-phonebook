@@ -1,28 +1,41 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+
 import {
     ContactFormStyle,
     LabelForm,
     InputForm,
     ButtonForAdd,
 } from 'components/ContactForm/ContactForm.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from 'redux/selector';
+import { addNewContact } from 'redux/slice';
+import shortid from 'shortid';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
-export const ContactForm = ({handleSubmit}) => {
+export const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const handleChange = event => {
-    setName(event.target.value);
-  };
-
-  const handleChangeNumber = event => {
-    setNumber(event.target.value);
-  };
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const onSubmitForm = event => {
     event.preventDefault();
-    handleSubmit(name, number);
+    const checkContact = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+    if (checkContact === true) {
+      reset();
+      return toast.warn(`${name} is already in contacts`, { theme: 'colored' });
+    }
+    const newContact = {
+      id: shortid.generate(),
+      name,
+      number,
+    };
+    dispatch(addNewContact(newContact));
     reset();
   };
   const reset = () => {
@@ -40,7 +53,7 @@ export const ContactForm = ({handleSubmit}) => {
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
           value={name}
-          onChange={handleChange}
+          onChange={event => setName(event.target.value)}
         />
         <LabelForm>Number</LabelForm>
         <InputForm
@@ -51,7 +64,7 @@ export const ContactForm = ({handleSubmit}) => {
           required
           placeholder="Enter phone number"
           value={number}
-          onChange={handleChangeNumber}
+          onChange={event => setNumber(event.target.value)}
         />
         <ButtonForAdd type="submit">Add contact</ButtonForAdd>
       </ContactFormStyle>
@@ -59,6 +72,3 @@ export const ContactForm = ({handleSubmit}) => {
   
 }
 
-ContactForm.propTypes = {
-    handleSubmit: PropTypes.func.isRequired,
-};
