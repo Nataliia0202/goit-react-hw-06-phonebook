@@ -10,6 +10,7 @@ import {
 } from 'redux-persist';
 import { persistedReducer } from './slice';
 
+
 export const store = configureStore({
   reducer: {
     contacts: persistedReducer,
